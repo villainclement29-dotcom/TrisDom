@@ -1,0 +1,12 @@
+{
+  "name": "@agentix/store",
+  "packageManager": "yarn@4.10.3",
+  "module": "index.js",
+  "dependencies": {
+    "@nanostores/react": "^1.0.0",
+    "nanostores": "^1.0.1"
+  },
+  "peerDependencies": {
+    "react": "^19.2.3"
+  }
+}

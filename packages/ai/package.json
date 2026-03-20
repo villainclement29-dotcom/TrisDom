@@ -1,0 +1,9 @@
+{
+  "name": "@agentix/ai",
+  "module": "index.js",
+  "packageManager": "yarn@4.10.3",
+  "peerDependencies": {
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  }
+}

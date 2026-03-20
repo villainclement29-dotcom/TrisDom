@@ -1,0 +1,9 @@
+{
+  "name": "@agentix/canvas",
+  "packageManager": "yarn@4.10.3",
+  "module": "index.js",
+  "peerDependencies": {
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  }
+}
