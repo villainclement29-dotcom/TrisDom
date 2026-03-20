@@ -3,7 +3,7 @@ import '@xyflow/react/dist/style.css'
 import { Flex } from '@radix-ui/themes'
 import { Content } from '@agentix/content-box'
 import { SaveProjectButton } from '@agentix/base'
-import { $currentProjectId, $setProjectId, loadProjectGraph } from '@agentix/store'
+import { $currentProjectId, $setProjectId, loadProjectGraph, $justGenerated } from '@agentix/store'
 import { supabase } from '@agentix/util'
 import { useStore } from '@nanostores/react'
 import { useEffect } from 'react'
@@ -25,6 +25,11 @@ export function Home() {
 
     if (!id) {
       console.warn('Aucun projet courant, rien à charger')
+      return
+    }
+
+    if ($justGenerated.get()) {
+      $justGenerated.set(false)
       return
     }
 

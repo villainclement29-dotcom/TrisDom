@@ -1,6 +1,7 @@
 import { createProject } from '@agentix/base'
-import { $setProjectId, loadProjectGraph, $chatAgents, $nodes } from '@agentix/store'
+import { $setProjectId, loadProjectGraph, $chatAgents, $nodes, $edges, $isGenerating, $generatingProgress, $currentProjectId, $LearnResponses, $ExerciseFullResponse, $QcmSummary, $justGenerated } from '@agentix/store'
 import { $addEdge, $addNode } from '@agentix/store'
+import { saveProject } from '@agentix/base'
 import { useNavigate } from 'raviger'
 import { Button, Flex, Text, TextField, TextArea } from '@radix-ui/themes'
 import { useRef, useState } from 'react'
@@ -35,11 +36,28 @@ export default function Create() {
 
       const prompt = promptRef.current.trim()
       if (prompt) {
-        // fire and forget — la génération continue en arrière-plan sur /home
-        generateGraph(prompt, chatAgents.slice(0, -1)).catch(console.error)
+        const agents = chatAgents.slice(0, -1)
+        const steps = isEmpty(agents) ? [null] : agents
+        $isGenerating.set(true)
+        $generatingProgress.set({ current: 0, total: steps.length })
+        generateGraph(prompt, agents)
+          .then(() => saveProject(
+            $currentProjectId.get(),
+            $nodes.get(),
+            $edges.get(),
+            $LearnResponses.get(),
+            $ExerciseFullResponse.get(),
+            $QcmSummary.get(),
+          ))
+          .catch(console.error)
+          .finally(() => {
+            $justGenerated.set(true)
+            $isGenerating.set(false)
+          })
+        navigate('/Generating')
+      } else {
+        navigate('/home')
       }
-
-      navigate('/home')
     } catch (err) {
       console.error('Erreur création projet', err)
       setIsLoading(false)
@@ -52,7 +70,8 @@ export default function Create() {
     let Topics = []
     const steps = isEmpty(agents) ? [null] : agents
 
-    for (const agent of steps) {
+    for (let i = 0; i < steps.length; i++) {
+      const agent = steps[i]
       if (agent?.isBridge) {
         for (const el of items) {
           await runAgent(el.data.label, agent, el.id)
@@ -64,6 +83,7 @@ export default function Create() {
       } else {
         await runAgent(prompt, agent, nodeRootId)
       }
+      $generatingProgress.set({ current: i + 1, total: steps.length })
     }
 
     async function runAgent(promptText, agent, rootId) {

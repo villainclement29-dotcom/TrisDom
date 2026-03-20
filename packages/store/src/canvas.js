@@ -15,6 +15,9 @@ export const $selectedNodeId = atom(null)
 export const $selectedNode = atom(null)
 export const $selectedNodeLabel = atom(null)
 export const $ContentTitle = atom('')
+export const $isGenerating = atom(false)
+export const $generatingProgress = atom({ current: 0, total: 0 })
+export const $justGenerated = atom(false)
 
 
 export const $setProjectId = (id) => {
