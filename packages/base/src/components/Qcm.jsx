@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from '@nanostores/react'
 import { QcmCard } from './QcmCards'
-import { $QcmSummary, $setQCMScore, $setQcmSummary, $setNodeBgColor } from '@agentix/store'
+import { $QcmSummary, $setQCMScore, $setQcmSummary, $setNodeBgColor, $removeQcmSummary } from '@agentix/store'
 
 export function Qcm({ data, rootId }) {
     const qcmSummaryMap = useStore($QcmSummary)
@@ -13,12 +13,21 @@ export function Qcm({ data, rootId }) {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
     const [answers, setAnswers] = useState({})
     const [showSummary, setShowSummary] = useState(false)
+    const savedOnceRef = useRef(false)
 
-    // ✅ 1) Si un résumé existe déjà en store pour ce rootId => on hydrate l’UI
+    // Reset complet quand un nouveau QCM est généré (data change)
+    useEffect(() => {
+        if (!existingSummary) {
+            setCurrentQuestionIndex(0)
+            setAnswers({})
+            setShowSummary(false)
+            savedOnceRef.current = false
+        }
+    }, [data])
+
+    // Si un résumé existe déjà en store pour ce rootId => on hydrate l'UI
     useEffect(() => {
         if (!existingSummary) return
-
-        // On affiche direct le résumé
         setAnswers(existingSummary.answers ?? {})
         setCurrentQuestionIndex(
             typeof existingSummary.currentQuestionIndex === 'number'
@@ -38,8 +47,6 @@ export function Qcm({ data, rootId }) {
         }, 0)
     }, [answers, questions])
 
-    
-
     if (!currentQuestion && !showSummary) {
         return <div>Aucune question disponible.</div>
     }
@@ -58,6 +65,14 @@ export function Qcm({ data, rootId }) {
         }
     }
 
+    const handleRestart = () => {
+        $removeQcmSummary(rootId)
+        setCurrentQuestionIndex(0)
+        setAnswers({})
+        setShowSummary(false)
+        savedOnceRef.current = false
+    }
+
     const handleNext = () => {
         if (currentQuestionIndex < totalQuestions - 1) {
             setCurrentQuestionIndex((i) => i + 1)
@@ -66,14 +81,11 @@ export function Qcm({ data, rootId }) {
         }
     }
 
-    // ✅ 2) Quand le QCM est terminé, on stocke un résumé dans $QcmSummary[rootId]
-    const savedOnceRef = useRef(false)
+    // Quand le QCM est terminé, on stocke un résumé dans $QcmSummary[rootId]
     useEffect(() => {
         if (!showSummary) return
         if (!rootId) return
         if (savedOnceRef.current) return
-
-        // Si déjà présent, pas besoin de réécrire
         if (existingSummary) {
             savedOnceRef.current = true
             return
@@ -86,13 +98,21 @@ export function Qcm({ data, rootId }) {
             totalQuestions,
             score,
             currentQuestionIndex,
-            answers, // { [questionId]: { selectedIndex } }
+            answers,
         }
 
         $setQcmSummary(rootId, summary)
         $setQCMScore(rootId, score)
-        // Appliquer la couleur au noeud via le store
-        const bgColor = score === totalQuestions ? "#00d832ff" : "#ff4c4cff"
+
+        // 3 niveaux : parfait / >= 50% / < 50%
+        let bgColor
+        if (score === totalQuestions) {
+            bgColor = '#00d832ff'
+        } else if (score >= totalQuestions / 2) {
+            bgColor = '#e0ac00ff'
+        } else {
+            bgColor = '#ff4c4cff'
+        }
         $setNodeBgColor(rootId, bgColor, 'évaluer')
         $setNodeBgColor(rootId, bgColor)
         savedOnceRef.current = true
@@ -124,6 +144,20 @@ export function Qcm({ data, rootId }) {
                     <p>
                         Score final : <strong>{score}</strong> / {totalQuestions}
                     </p>
+                    <button
+                        type="button"
+                        onClick={handleRestart}
+                        style={{
+                            marginBottom: 16,
+                            padding: '8px 16px',
+                            borderRadius: 6,
+                            border: '1px solid #ddd',
+                            backgroundColor: '#f0f0f0',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        Recommencer
+                    </button>
 
                     <h4 style={{ marginTop: 16 }}>Vos réponses :</h4>
                     <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 16 }}>

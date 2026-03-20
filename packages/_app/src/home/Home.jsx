@@ -2,14 +2,12 @@ import { FlowCanvas } from '@agentix/canvas'
 import '@xyflow/react/dist/style.css'
 import { Flex } from '@radix-ui/themes'
 import { Content } from '@agentix/content-box'
-import { Chat } from '@agentix/ai'
 import { SaveProjectButton } from '@agentix/base'
 import { $currentProjectId, $setProjectId, loadProjectGraph } from '@agentix/store'
 import { supabase } from '@agentix/util'
 import { useStore } from '@nanostores/react'
 import { useEffect } from 'react'
 import GalleryButton from '@agentix/base/src/components/GalleryButton'
-import { Controls, MiniMap } from '@xyflow/react'
 
 export function Home() {
   const projectId = useStore($currentProjectId)
@@ -67,7 +65,6 @@ export function Home() {
         justify={'between'}
         gap={'3'}
         style={{ height: '100%' }}>
-        <Chat />
         <Flex
           style={{
             position: 'fixed',

@@ -75,7 +75,7 @@ export function QcmCard({
 
             {shouldShowFeedback && (
                 <div style={{ marginTop: 8 }}>
-                    {answer?.isCorrect ? (
+                    {answer?.selectedIndex === question.answerIndex ? (
                         <p style={{ color: 'green', marginBottom: 4 }}>Bonne réponse ✅</p>
                     ) : (
                         <p style={{ color: 'red', marginBottom: 4 }}>Mauvaise réponse ❌</p>

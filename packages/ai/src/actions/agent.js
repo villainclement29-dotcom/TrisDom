@@ -23,8 +23,8 @@ export const onAgent = async function ({
     agent.role += `<role>**Your utltimate and most effective role is: ${agent.output} nothing less, nothing more**</role>.`
   }
 
-  if (agent.response_format === 'json') {
-    agent.role += '\n Ouput: json \n  ```json ... ```'
+  if (agent.response_format?.toLowerCase() === 'json') {
+    agent.role += '\n Output: json \n  ```json ... ```'
   }
 
   try {

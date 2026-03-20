@@ -4,24 +4,24 @@ import {
     $agents,
     $Content,
     $LearnResponses,
-    $QcmFullResponse,
+    $setQcmSummary,
 } from '@agentix/store'
 
-function stripCodeFences(raw) {
+function extractJSON(raw) {
     if (!raw) return ''
-    let cleaned = raw.trim()
-
-    if (cleaned.startsWith('```')) {
-        cleaned = cleaned.replace(/^```[a-zA-Z0-9]*\n?/, '')
+    const cleaned = raw.trim()
+    const start = cleaned.indexOf('{')
+    const end = cleaned.lastIndexOf('}')
+    if (start !== -1 && end !== -1 && end > start) {
+        return cleaned.slice(start, end + 1)
     }
-    if (cleaned.endsWith('```')) {
-        cleaned = cleaned.replace(/```$/, '')
-    }
-    return cleaned.trim()
+    return cleaned
 }
 
 export async function generateQcm(RootId) {
     const affiliatedLearnResponse = $LearnResponses.get()[RootId]
+    // Efface l'ancien résumé pour que le QCM reparte en mode questions
+    $setQcmSummary(RootId, null)
     try {
         const agents = $agents.get()
         const QcmAgent = agents.find((a) => a.id === 'QcmAgent')
@@ -41,7 +41,7 @@ export async function generateQcm(RootId) {
 
         console.log('QCM brut (string):', QcmResponse)
 
-        const cleaned = stripCodeFences(QcmResponse)
+        const cleaned = extractJSON(QcmResponse)
 
         //parser le JSON
         let parsed
@@ -51,7 +51,7 @@ export async function generateQcm(RootId) {
             console.error('Erreur de parsing JSON du QCM :', e)
             console.error('Contenu reçu :', cleaned)
 
-            // en cas d’erreur, on garde l’ancien comportement pour debug
+            // en cas d'erreur, on garde l'ancien comportement pour debug
             $addQcmResponse(RootId, QcmResponse)
             $Content.set(QcmResponse)
             return

@@ -35,6 +35,13 @@ export const $setQcmSummary = (rootId, summary) => {
   console.log('summary du qcm', $QcmSummary.get())
 }
 
+export const $removeQcmSummary = (rootId) => {
+  const current = $QcmSummary.get()
+  const updated = { ...current }
+  delete updated[rootId]
+  $QcmSummary.set(updated)
+}
+
 export const $setQCMScore = (rootId, score) => {
   const current = $QCMScore.get()
   $QCMScore.set({ ...current, [rootId]: score })
