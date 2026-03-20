@@ -78,7 +78,7 @@ export const $agents = atom([
     emoji: '📖',
     title: 'Task Explainer',
     role: ContentModuleAgent,
-    response_format: 'JSON',
+    response_format: 'text',
     tools: [TlContentModuleAgent],
     temperature: 0.2,
     desired_response:
