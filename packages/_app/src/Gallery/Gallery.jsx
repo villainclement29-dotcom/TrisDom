@@ -30,6 +30,8 @@ export default function Gallery() {
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+  const [deleting, setDeleting] = useState(false)
 
   const [displayName, setDisplayName] = useState('')
   const [search, setSearch] = useState('')
@@ -105,6 +107,18 @@ export default function Gallery() {
       return t.includes(q) || a.includes(q)
     })
   }, [projects, search])
+
+  async function deleteProject(id) {
+    setDeleting(true)
+    const { error } = await supabase.from('projects').delete().eq('id', id)
+    if (error) {
+      console.error(error)
+    } else {
+      setProjects((prev) => prev.filter((p) => p.id !== id))
+    }
+    setDeleting(false)
+    setConfirmDeleteId(null)
+  }
 
   async function openProject(id) {
     setError(null)
@@ -313,6 +327,7 @@ export default function Gallery() {
                     marginBottom: 14,
                     cursor: 'pointer',
                     boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+                    position: 'relative',
                   }}>
                   {/* thumbnail */}
                   <div
@@ -327,27 +342,18 @@ export default function Gallery() {
 
                   {/* content */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        gap: 12,
-                      }}>
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: 30, fontWeight: 800, marginBottom: 6 }}>
-                          {p.title || 'Sans titre'}
-                        </div>
-                        <div style={{ fontSize: 12, color: '#6b7280' }}>
-                          Une petite introduction à {p.title || 'ton projet'}
-                        </div>
-                        <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>
-                          {p.author ? `Cours par ${p.author}` : 'Cours rapide'}
-                        </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 30, fontWeight: 800, marginBottom: 4 }}>
+                        {p.title || 'Sans titre'}
                       </div>
-
-                      <div
-                        style={{ fontSize: 12, color: '#6b7280', whiteSpace: 'nowrap' }}>
+                      <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 4 }}>
                         {date}
+                      </div>
+                      <div style={{ fontSize: 12, color: '#6b7280' }}>
+                        Une petite introduction à {p.title || 'ton projet'}
+                      </div>
+                      <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>
+                        {p.author ? `Cours par ${p.author}` : 'Cours rapide'}
                       </div>
                     </div>
 
@@ -381,9 +387,85 @@ export default function Gallery() {
                       </div>
                     </div>
                   </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(p.id) }}
+                    style={{
+                      position: 'absolute',
+                      top: 12,
+                      right: 12,
+                      background: 'none',
+                      border: '1px solid #fca5a5',
+                      borderRadius: 8,
+                      padding: '4px 10px',
+                      fontSize: 12,
+                      color: '#ef4444',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                    }}>
+                    Supprimer
+                  </button>
                 </div>
               )
             })}
+          </div>
+        </div>
+      )}
+
+      {confirmDeleteId && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0,0,0,0.4)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: 16,
+            padding: 28,
+            width: 360,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+          }}>
+            <p style={{ margin: '0 0 8px', fontSize: '1.1rem', fontWeight: 700, color: '#111827' }}>
+              Supprimer ce projet ?
+            </p>
+            <p style={{ margin: '0 0 24px', fontSize: '0.9rem', color: '#6b7280' }}>
+              Cette action est irréversible. Le projet sera définitivement supprimé.
+            </p>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setConfirmDeleteId(null)}
+                disabled={deleting}
+                style={{
+                  padding: '8px 18px',
+                  borderRadius: 8,
+                  border: '1px solid #e5e7eb',
+                  background: 'white',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  fontSize: 14,
+                }}>
+                Annuler
+              </button>
+              <button
+                onClick={() => deleteProject(confirmDeleteId)}
+                disabled={deleting}
+                style={{
+                  padding: '8px 18px',
+                  borderRadius: 8,
+                  border: 'none',
+                  background: '#ef4444',
+                  color: 'white',
+                  cursor: deleting ? 'not-allowed' : 'pointer',
+                  fontWeight: 600,
+                  fontSize: 14,
+                  opacity: deleting ? 0.7 : 1,
+                }}>
+                {deleting ? 'Suppression…' : 'Supprimer'}
+              </button>
+            </div>
           </div>
         </div>
       )}

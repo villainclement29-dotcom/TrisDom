@@ -3,7 +3,9 @@ import { NodeBox } from '@agentix/util'
 
 export function BasicNode({ data, selected, direction = 'LR' }) {
   return (
-    <NodeBox className={`basic-node ${selected ? 'basic-node--selected' : ''}`}>
+    <NodeBox
+      className={`basic-node ${selected ? 'basic-node--selected' : ''}`}
+      style={data?.bgColor ? { backgroundColor: data.bgColor } : undefined}>
       {/* Handles d'entrée / sortie */}
       <Handle
         type='target'

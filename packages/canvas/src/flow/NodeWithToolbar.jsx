@@ -1,5 +1,5 @@
 import { $addEdge, $addNode } from '@agentix/store'
-import { getID, NODE_TOOLBAR, Button, NodeBox } from '@agentix/util'
+import { getID, BASIC_NODE, Button, NodeBox } from '@agentix/util'
 import { PlusIcon } from '@radix-ui/react-icons'
 import { useReactFlow, Handle, Position, NodeToolbar } from '@xyflow/react'
 
@@ -15,7 +15,7 @@ export function NodeWithToolbar({ data, id, direction = 'LR' }) {
 
     const newNode = {
       id: getID(),
-      type: NODE_TOOLBAR,
+      type: BASIC_NODE,
       position: { x: 0, y: 0 },
       data: { label: 'New node' },
       style: {},

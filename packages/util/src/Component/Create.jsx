@@ -8,7 +8,7 @@ import { useRef, useState } from 'react'
 import { supabase } from '@agentix/util'
 import { useStore } from '@nanostores/react'
 import { onAgent } from '@agentix/ai/src/actions/agent'
-import { getID, NODE_TOOLBAR, BASIC_NODE } from '@agentix/util'
+import { getID, BASIC_NODE } from '@agentix/util'
 import { TlCourseModule, TlHeadline, TlModuleTopics, TlToolAgent } from '@agentix/util/src/agents'
 import { isEmpty } from 'lodash'
 
@@ -164,7 +164,7 @@ export default function Create() {
                   id: getID(),
                   data: { label: item, bgColor: '#fff' },
                   position: { x: 0, y: 0 },
-                  type: NODE_TOOLBAR,
+                  type: BASIC_NODE,
                   sourceNodeId: rootId,
                 }
                 const newEdge = {

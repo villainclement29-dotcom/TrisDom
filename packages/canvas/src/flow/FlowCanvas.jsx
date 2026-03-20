@@ -29,7 +29,6 @@ import {
   $QcmFullResponse,
 } from '@agentix/store'
 import { BasicNode } from './BasicNode'
-import { NODE_TOOLBAR } from '@agentix/util'
 
 const nodeTypes = {
   NodeWithToolbar: NodeWithToolbar,
@@ -145,9 +144,8 @@ export function FlowCanvas() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={(event, node) => {
-          if (node.type === NODE_TOOLBAR) {
-            const sourceId = node.sourceNodeId
-            $setRootNode(nodes.find((n) => n.id === sourceId))
+          if (node.sourceNodeId) {
+            $setRootNode(nodes.find((n) => n.id === node.sourceNodeId))
           }
           $setSelectedNodeWithId(node.id)
           displayToolNodes(node.Children)
