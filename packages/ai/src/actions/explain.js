@@ -1,5 +1,6 @@
 import { onAgent } from './agent'
-import { $addLearnResponse, $agents, $Content, $nodes, $edges } from '@agentix/store'
+import { $addLearnResponse, $agents, $Content, $nodes, $edges, $isContentGenerating } from '@agentix/store'
+import { generateLessonImage } from './generateImage'
 
 function buildAncestorPath(nodeId, nodes, edges) {
   const path = []
@@ -17,6 +18,7 @@ function buildAncestorPath(nodeId, nodes, edges) {
 }
 
 export async function explainNodeContent(id, data) {
+  $isContentGenerating.set(true)
   try {
     const agents = $agents.get()
     const explainerAgent = agents.find((a) => a.id === 'ContentModuleAgent')
@@ -45,9 +47,12 @@ export async function explainNodeContent(id, data) {
 
     $addLearnResponse(id, fullResponse)
     $Content.set(fullResponse)
+
+    // Génération de l'illustration en parallèle (fire-and-forget)
+    generateLessonImage(id, contextPrompt)
   } catch (error) {
     console.error('Erreur lors de l\'explication:', error)
   } finally {
-    console.log('Explication terminée.')
+    $isContentGenerating.set(false)
   }
 }

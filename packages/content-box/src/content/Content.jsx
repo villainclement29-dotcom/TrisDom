@@ -7,6 +7,9 @@ import {
   $selectedNodeLabel,
   $LearnResponses,
   $setNodeBgColor,
+  $LessonImages,
+  $LessonImageLoading,
+  $isContentGenerating,
 } from '@agentix/store'
 import { Markdown } from '@agentix/base'
 import { useState, useEffect } from 'react'
@@ -55,6 +58,12 @@ export function Content() {
 
   const selectedNode = useStore($selectedNode)
   const selectedNodeId = selectedNode?.id ?? null
+
+  const lessonImages = useStore($LessonImages)
+  const lessonImageLoading = useStore($LessonImageLoading)
+  const lessonImage = lessonImages[rootNodeId] ?? null
+  const isImageLoading = !!lessonImageLoading[rootNodeId]
+  const isContentGenerating = useStore($isContentGenerating)
 
   const [open, setOpen] = useState(false)
   const [fullyOpen, setFullyOpen] = useState(false)
@@ -328,10 +337,74 @@ export function Content() {
                 flex: 1,
               }}
               className="Content">
-              {isQuiz ? (
+              {isContentGenerating ? (
+                <div style={{ padding: '24px 8px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  {[1, 0.7, 0.85, 0.6, 0.9].map((w, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        height: i === 0 ? 22 : 14,
+                        width: `${w * 100}%`,
+                        borderRadius: 6,
+                        background: 'linear-gradient(90deg, #e8eeff 25%, #d0daff 50%, #e8eeff 75%)',
+                        backgroundSize: '200% 100%',
+                        animation: `shimmer 1.4s ${i * 0.1}s infinite`,
+                      }}
+                    />
+                  ))}
+                  <div style={{ height: 1, background: '#e2e8f0', margin: '4px 0' }} />
+                  {[0.95, 0.75, 0.88, 0.65].map((w, i) => (
+                    <div
+                      key={i + 10}
+                      style={{
+                        height: 14,
+                        width: `${w * 100}%`,
+                        borderRadius: 6,
+                        background: 'linear-gradient(90deg, #e8eeff 25%, #d0daff 50%, #e8eeff 75%)',
+                        backgroundSize: '200% 100%',
+                        animation: `shimmer 1.4s ${i * 0.12}s infinite`,
+                      }}
+                    />
+                  ))}
+                </div>
+              ) : isQuiz ? (
                 <Qcm data={response} rootId={rootNodeId} />
               ) : (
                 <div key={`${rootNodeId}-${CurrentNodeLabel}`} className="lesson-fade">
+                  {/* Illustration Gemini — visible uniquement pour "apprendre" */}
+                  {CurrentNodeLabel === 'apprendre' && (isImageLoading || lessonImage) && (
+                    <div style={{
+                      width: '100%',
+                      height: 200,
+                      borderRadius: 12,
+                      overflow: 'hidden',
+                      marginBottom: 20,
+                      background: '#f0f4ff',
+                      flexShrink: 0,
+                    }}>
+                      {isImageLoading ? (
+                        <div style={{
+                          width: '100%',
+                          height: '100%',
+                          background: 'linear-gradient(90deg, #e8eeff 25%, #d0daff 50%, #e8eeff 75%)',
+                          backgroundSize: '200% 100%',
+                          animation: 'shimmer 1.4s infinite',
+                        }} />
+                      ) : (
+                        <img
+                          src={lessonImage}
+                          alt="Illustration de la leçon"
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            display: 'block',
+                            animation: 'lessonFadeIn 0.5s ease both',
+                          }}
+                        />
+                      )}
+                    </div>
+                  )}
                   <Markdown content={response || ''} />
                 </div>
               )}

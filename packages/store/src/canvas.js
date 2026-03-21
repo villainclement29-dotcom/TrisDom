@@ -18,6 +18,7 @@ export const $ContentTitle = atom('')
 export const $isGenerating = atom(false)
 export const $generatingProgress = atom({ current: 0, total: 0 })
 export const $justGenerated = atom(false)
+export const $isContentGenerating = atom(false)
 
 
 export const $setProjectId = (id) => {

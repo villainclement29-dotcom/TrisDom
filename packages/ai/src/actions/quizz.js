@@ -5,6 +5,7 @@ import {
     $Content,
     $LearnResponses,
     $setQcmSummary,
+    $isContentGenerating,
 } from '@agentix/store'
 
 function extractJSON(raw) {
@@ -20,8 +21,8 @@ function extractJSON(raw) {
 
 export async function generateQcm(RootId) {
     const affiliatedLearnResponse = $LearnResponses.get()[RootId]
-    // Efface l'ancien résumé pour que le QCM reparte en mode questions
     $setQcmSummary(RootId, null)
+    $isContentGenerating.set(true)
     try {
         const agents = $agents.get()
         const QcmAgent = agents.find((a) => a.id === 'QcmAgent')
@@ -62,6 +63,6 @@ export async function generateQcm(RootId) {
     } catch (error) {
         console.error("Erreur lors de la génération du QCM :", error)
     } finally {
-        console.log('generation du Qcm terminée.')
+        $isContentGenerating.set(false)
     }
 }

@@ -5,6 +5,8 @@ export const $ExerciseFullResponse = atom({})
 export const $QcmFullResponse = atom({})
 export const $QcmSummary = atom({})
 export const $QCMScore = atom({})
+export const $LessonImages = atom({})        // { [nodeId]: dataUrl }
+export const $LessonImageLoading = atom({})  // { [nodeId]: true }
 // export const $QCMbgColor = atom({})
 
 // export const $setQCMbgColor = (rootId, bgColor) => {
@@ -45,6 +47,17 @@ export const $removeQcmSummary = (rootId) => {
 export const $setQCMScore = (rootId, score) => {
   const current = $QCMScore.get()
   $QCMScore.set({ ...current, [rootId]: score })
+}
+
+export const $setLessonImageLoading = (nodeId) => {
+  $LessonImageLoading.set({ ...$LessonImageLoading.get(), [nodeId]: true })
+}
+
+export const $addLessonImage = (nodeId, dataUrl) => {
+  $LessonImages.set({ ...$LessonImages.get(), [nodeId]: dataUrl })
+  const loading = { ...$LessonImageLoading.get() }
+  delete loading[nodeId]
+  $LessonImageLoading.set(loading)
 }
 
 

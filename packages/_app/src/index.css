@@ -83,6 +83,11 @@ html, body, #root {
    LESSON CONTENT — fade-in + rich typography
    ========================================================= */
 
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 @keyframes lessonFadeIn {
   from {
     opacity: 0;

@@ -5,10 +5,12 @@ import {
   $Content,
   $ExerciseFullResponse,
   $LearnResponses,
+  $isContentGenerating,
 } from '@agentix/store'
 
 export async function generateExercicesWithCorrection(RootId) {
   const affiliatedLearnResponse = $LearnResponses.get()[RootId]
+  $isContentGenerating.set(true)
   try {
     const agents = $agents.get()
     const exercisesAgent = agents.find((a) => a.id === 'ExercicesAgent')
@@ -45,6 +47,6 @@ export async function generateExercicesWithCorrection(RootId) {
   } catch (error) {
     console.error('Erreur lors de l’explication:', error)
   } finally {
-    console.log('Exercices correctement générés.')
+    $isContentGenerating.set(false)
   }
 }
