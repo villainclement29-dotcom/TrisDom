@@ -9,10 +9,6 @@ const root = path.resolve(__dirname, '../..')
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  build: {
-    outDir: path.resolve(root, 'dist'),
-    emptyOutDir: true,
-  },
   resolve: {
     dedupe: ['react', 'react-dom'],
     alias: {
