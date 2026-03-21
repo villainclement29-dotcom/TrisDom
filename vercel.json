@@ -1,0 +1,8 @@
+{
+  "buildCommand": "yarn workspace app build",
+  "outputDirectory": "packages/_app/dist",
+  "installCommand": "yarn install",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
