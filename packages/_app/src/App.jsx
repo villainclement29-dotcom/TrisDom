@@ -1,4 +1,4 @@
-import Gallery from './Gallery/gallery.jsx'
+import Gallery from './Gallery/Gallery.jsx'
 import { useRoutes } from 'raviger'
 import { Home } from './home/Home.jsx'
 import Create from '@agentix/util/src/Component/Create.jsx'
