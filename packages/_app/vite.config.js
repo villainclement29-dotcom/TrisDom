@@ -10,7 +10,6 @@ const root = path.resolve(__dirname, '../..')
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
     dedupe: ['react', 'react-dom'],
     alias: {
       react: path.resolve(root, 'node_modules/react'),

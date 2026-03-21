@@ -1,9 +1,9 @@
-import Gallery from './Gallery/gallery'
+import Gallery from './Gallery/gallery.jsx'
 import { useRoutes } from 'raviger'
-import { Home } from './home/Home'
-import Create from '@agentix/util/src/Component/Create'
-import Connexion from './Connexion/Connexion'
-import Generating from './Generating/Generating'
+import { Home } from './home/Home.jsx'
+import Create from '@agentix/util/src/Component/Create.jsx'
+import Connexion from './Connexion/Connexion.jsx'
+import Generating from './Generating/Generating.jsx'
 
 export function App() {
   const route = useRoutes({
