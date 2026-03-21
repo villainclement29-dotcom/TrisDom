@@ -13,18 +13,23 @@ function formatDate(iso) {
   return `${dd}/${mm}/${yyyy}`
 }
 
-
-// % “fake” mais stable par projet (si tu n’as pas de champ progress)
 function stablePercentFromId(id) {
   const s = String(id || '')
   let h = 0
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
-  return 10 + (h % 91) // 10..100
+  return 10 + (h % 91)
 }
 
-
-
-
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 768px)').matches)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const handler = (e) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+  return isMobile
+}
 
 export default function Gallery() {
   const [projects, setProjects] = useState([])
@@ -38,8 +43,8 @@ export default function Gallery() {
 
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileRef = useRef(null)
+  const isMobile = useIsMobile()
 
-  //profile menu toggle
   useEffect(() => {
     function onDocClick(e) {
       if (!profileRef.current) return
@@ -52,7 +57,6 @@ export default function Gallery() {
   }, [])
 
   const navigate = useNavigate()
-  
 
   async function loadProjects() {
     setLoading(true)
@@ -66,14 +70,12 @@ export default function Gallery() {
       return
     }
 
-    console.log('USER METADATA =>', user?.user_metadata)
-
     setDisplayName(user?.user_metadata?.name || user?.email || 'Utilisateur')
 
     const { data: projectsData, error: projectsError } = await supabase
       .from('projects')
-      .select('id, title, author, created_at') // adapte si tu as plus de champs
-      .eq('user_id', user.id) // ✅ ne charge que les projets du user
+      .select('id, title, author, created_at')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false })
 
     if (projectsError) {
@@ -92,9 +94,7 @@ export default function Gallery() {
       if (cancelled) return
       await loadProjects()
     })()
-    return () => {
-      cancelled = true
-    }
+    return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -133,8 +133,8 @@ export default function Gallery() {
     const { data: projectData, error: projectError } = await supabase
       .from('projects')
       .select('data')
-      .eq('id', id) // ✅ important
-      .eq('user_id', user.id) // ✅ important
+      .eq('id', id)
+      .eq('user_id', user.id)
       .single()
 
     if (projectError) {
@@ -151,106 +151,121 @@ export default function Gallery() {
     navigate('/home')
   }
 
-  const headerStyles = {
-    container: {
-      borderRadius: 18,
-      padding: '35px 24px',
-      backgroundColor: '#2f7ef6',
-      color: 'white',
-      display: 'flex',
-      alignItems: 'flex-start',
-      justifyContent: 'space-between',
-      gap: 16,
-    },
-    left: { display: 'flex', flexDirection: 'column', gap: 17 },
-    title: { fontSize: 42, fontWeight: 800, margin: 0, lineHeight: 1.05 },
-    subtitle: { margin: 0, opacity: 0.9, fontSize: 20 },
-    actionsRow: { display: 'flex', gap: 10, marginTop: 2 },
-    actionBtn: {
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: 8,
-      padding: '8px 12px',
-      borderRadius: 10,
-      border: '1px solid rgba(255,255,255,0.65)',
-      background: 'rgba(255,255,255,0.1)',
-      color: 'white',
-      cursor: 'pointer',
-      fontWeight: 600,
-    },
-    profile: { display: 'flex', alignItems: 'center', gap: 10 },
-    avatar: {
-      position: 'relative',
-      width: 34,
-      height: 34,
-      borderRadius: 999,
-      background: 'rgba(255,255,255,0.25)',
-      display: 'grid',
-      placeItems: 'center',
-      fontWeight: 800,
-      cursor: 'pointer',
-    },
-    profileMenu: { 
-      display: 'block',
-      position: 'absolute',
-      right: 47,
-      top: 78,
-      background: 'white',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-      borderRadius: 5,
-     },
-    profileText: { lineHeight: 1.1, textAlign: 'right' },
-    profileName: { fontSize: 12, fontWeight: 700, opacity: 0.95 },
-    profileRole: { fontSize: 11, opacity: 0.85 },
-  }
+  /* ------ nom court pour le header (tronqué si trop long sur mobile) ------ */
+  const shortName = isMobile
+    ? (displayName || 'Utilisateur').split('@')[0]
+    : (displayName || '...')
+
+  const thumbSize = isMobile ? 72 : 200
 
   return (
-    <main style={{ padding: '20px 22px' }}>
+    <main style={{ padding: isMobile ? '14px 12px' : '20px 22px' }}>
+
       {/* HEADER BLUE */}
-      <section style={headerStyles.container}>
-        <div style={headerStyles.left}>
-          <h1 style={headerStyles.title}>Bienvenu {displayName || '...'} !</h1>
-          <p style={headerStyles.subtitle}>
+      <section
+        style={{
+          borderRadius: 18,
+          padding: isMobile ? '20px 16px' : '35px 24px',
+          backgroundColor: '#2f7ef6',
+          color: 'white',
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          gap: 12,
+        }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 10 : 17, flex: 1, minWidth: 0 }}>
+          <h1
+            style={{
+              fontSize: isMobile ? 26 : 42,
+              fontWeight: 800,
+              margin: 0,
+              lineHeight: 1.1,
+              wordBreak: 'break-word',
+            }}>
+            Bienvenu {shortName} !
+          </h1>
+          <p style={{ margin: 0, opacity: 0.9, fontSize: isMobile ? 14 : 20 }}>
             Tu as actuellement {projects.length} projets en cours
           </p>
 
-          <div style={headerStyles.actionsRow}>
+          <div style={{ display: 'flex', gap: 10, marginTop: 2, flexWrap: 'wrap' }}>
             <button
-              style={headerStyles.actionBtn}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: isMobile ? '7px 10px' : '8px 12px',
+                borderRadius: 10,
+                border: '1px solid rgba(255,255,255,0.65)',
+                background: 'rgba(255,255,255,0.1)',
+                color: 'white',
+                cursor: 'pointer',
+                fontWeight: 600,
+                fontSize: isMobile ? 13 : 14,
+              }}
               onClick={() => navigate('/Create')}>
               + Nouveau
             </button>
             <button
-              style={headerStyles.actionBtn}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: isMobile ? '7px 10px' : '8px 12px',
+                borderRadius: 10,
+                border: '1px solid rgba(255,255,255,0.65)',
+                background: 'rgba(255,255,255,0.1)',
+                color: 'white',
+                cursor: 'pointer',
+                fontWeight: 600,
+                fontSize: isMobile ? 13 : 14,
+              }}
               onClick={loadProjects}>
               Recharger
             </button>
           </div>
         </div>
 
-        <div style={headerStyles.profile}>
-          <div style={headerStyles.profileText}>
-            <div style={headerStyles.profileName}>{displayName || 'Utilisateur'}</div>
-            <div style={headerStyles.profileRole}>Student</div>
-          </div>
+        {/* Avatar + menu profil */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+          {!isMobile && (
+            <div style={{ lineHeight: 1.1, textAlign: 'right' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, opacity: 0.95 }}>{displayName || 'Utilisateur'}</div>
+              <div style={{ fontSize: 11, opacity: 0.85 }}>Student</div>
+            </div>
+          )}
           <Button
-            style={headerStyles.avatar}
-            onClick={() => setIsProfileOpen((v) => !v)}
-          >
+            style={{
+              position: 'relative',
+              width: 34,
+              height: 34,
+              borderRadius: 999,
+              background: 'rgba(255,255,255,0.25)',
+              display: 'grid',
+              placeItems: 'center',
+              fontWeight: 800,
+              cursor: 'pointer',
+            }}
+            onClick={() => setIsProfileOpen((v) => !v)}>
             {(displayName || 'U').slice(0, 1).toUpperCase()}
           </Button>
-          <div ref={profileRef} style={{
-            ...headerStyles.profileMenu,
-            display: isProfileOpen ? 'block' : 'none',}}>
-            <ul style = {{padding:'5px', margin:"5px" , listStyle  : 'none'}}>
-              <li >
-                <Link style={{
-                  textDecoration: 'none',
-                  color: 'black', 
-                }} 
-                href="/">
-                  Deconnexion
-                  </Link>
+          <div
+            ref={profileRef}
+            style={{
+              display: isProfileOpen ? 'block' : 'none',
+              position: 'absolute',
+              right: isMobile ? 12 : 47,
+              top: isMobile ? 160 : 78,
+              background: 'white',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              borderRadius: 5,
+              zIndex: 100,
+            }}>
+            <ul style={{ padding: '5px', margin: '5px', listStyle: 'none' }}>
+              <li>
+                <Link style={{ textDecoration: 'none', color: 'black' }} href="/">
+                  Déconnexion
+                </Link>
               </li>
             </ul>
           </div>
@@ -258,7 +273,7 @@ export default function Gallery() {
       </section>
 
       {/* SEARCH */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: 18 }}>
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
         <div
           style={{
             width: '520px',
@@ -274,38 +289,30 @@ export default function Gallery() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder='Rechercher un projet...'
-            style={{
-              border: 'none',
-              outline: 'none',
-              width: '100%',
-              fontSize: 14,
-            }}
+            placeholder="Rechercher un projet..."
+            style={{ border: 'none', outline: 'none', width: '100%', fontSize: 14 }}
           />
           <span style={{ opacity: 0.55 }}>🔎</span>
         </div>
       </div>
 
-      {/* STATE */}
+      {/* ÉTAT */}
       {loading && <p style={{ marginTop: 16 }}>Chargement des projets…</p>}
       {error && <p style={{ marginTop: 16, color: 'red' }}>Erreur : {error}</p>}
-
-      {/* LIST */}
       {!loading && !error && filteredProjects.length === 0 && (
         <p style={{ marginTop: 16 }}>Aucun projet pour le moment.</p>
       )}
 
+      {/* LISTE */}
       {!loading && !error && filteredProjects.length > 0 && (
-        <div style={{ marginTop: 18, display: 'flex', justifyContent: 'center' }}>
+        <div style={{ marginTop: 16, display: 'flex', justifyContent: 'center' }}>
           <div
             style={{
               width: '120vh',
               maxWidth: '100%',
-
-              // ✅ scroll ici
               maxHeight: 'calc(100vh - 260px)',
               overflowY: 'auto',
-              paddingRight: 8,
+              paddingRight: isMobile ? 0 : 8,
               scrollbarGutter: 'stable',
             }}>
             {filteredProjects.map((p, idx) => {
@@ -319,31 +326,41 @@ export default function Gallery() {
                   onClick={() => openProject(p.id)}
                   style={{
                     display: 'flex',
-                    gap: 16,
-                    padding: 16,
+                    flexDirection: 'column',
+                    gap: 10,
+                    padding: isMobile ? 12 : 16,
                     borderRadius: 14,
                     border: '1px solid #e5e7eb',
                     background: 'white',
-                    marginBottom: 14,
+                    marginBottom: 12,
                     cursor: 'pointer',
                     boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
-                    position: 'relative',
                   }}>
-                  {/* thumbnail */}
-                  <div
-                    style={{
-                      width: 200,
-                      height: 200,
-                      borderRadius: 12,
-                      background: thumbBg,
-                      flex: '0 0 auto',
-                    }}
-                  />
 
-                  {/* content */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 30, fontWeight: 800, marginBottom: 4 }}>
+                  {/* Ligne principale : vignette + infos */}
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                    {/* Vignette */}
+                    <div
+                      style={{
+                        width: thumbSize,
+                        height: thumbSize,
+                        borderRadius: 10,
+                        background: thumbBg,
+                        flexShrink: 0,
+                      }}
+                    />
+
+                    {/* Texte */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontSize: isMobile ? 18 : 28,
+                          fontWeight: 800,
+                          lineHeight: 1.2,
+                          wordBreak: 'break-word',
+                          marginBottom: 4,
+                          paddingRight: isMobile ? 0 : 90,
+                        }}>
                         {p.title || 'Sans titre'}
                       </div>
                       <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 4 }}>
@@ -352,58 +369,55 @@ export default function Gallery() {
                       <div style={{ fontSize: 12, color: '#6b7280' }}>
                         Une petite introduction à {p.title || 'ton projet'}
                       </div>
-                      <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>
+                      <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>
                         {p.author ? `Cours par ${p.author}` : 'Cours rapide'}
                       </div>
                     </div>
+                  </div>
 
-                    {/* progress */}
+                  {/* Barre de progression + bouton supprimer */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                    }}>
+                    <div style={{ fontSize: 12, color: '#6b7280', width: 36, flexShrink: 0 }}>
+                      {percent}%
+                    </div>
                     <div
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 10,
-                        marginTop: 14,
+                        height: 8,
+                        borderRadius: 999,
+                        background: '#e5e7eb',
+                        flex: 1,
+                        overflow: 'hidden',
                       }}>
-                      <div style={{ fontSize: 12, color: '#6b7280', width: 40 }}>
-                        {percent}%
-                      </div>
                       <div
                         style={{
-                          height: 8,
+                          height: '100%',
+                          width: `${percent}%`,
+                          background: '#2f7ef6',
                           borderRadius: 999,
-                          background: '#e5e7eb',
-                          width: '100%',
-                          overflow: 'hidden',
-                        }}>
-                        <div
-                          style={{
-                            height: '100%',
-                            width: `${percent}%`,
-                            background: '#2f7ef6',
-                            borderRadius: 999,
-                          }}
-                        />
-                      </div>
+                        }}
+                      />
                     </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(p.id) }}
+                      style={{
+                        flexShrink: 0,
+                        background: 'none',
+                        border: '1px solid #fca5a5',
+                        borderRadius: 8,
+                        padding: '4px 10px',
+                        fontSize: 12,
+                        color: '#ef4444',
+                        cursor: 'pointer',
+                        fontWeight: 600,
+                      }}>
+                      Supprimer
+                    </button>
                   </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(p.id) }}
-                    style={{
-                      position: 'absolute',
-                      top: 12,
-                      right: 12,
-                      background: 'none',
-                      border: '1px solid #fca5a5',
-                      borderRadius: 8,
-                      padding: '4px 10px',
-                      fontSize: 12,
-                      color: '#ef4444',
-                      cursor: 'pointer',
-                      fontWeight: 600,
-                    }}>
-                    Supprimer
-                  </button>
                 </div>
               )
             })}
@@ -411,23 +425,28 @@ export default function Gallery() {
         </div>
       )}
 
+      {/* MODALE CONFIRMATION */}
       {confirmDeleteId && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          backgroundColor: 'rgba(0,0,0,0.4)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999,
-        }}>
-          <div style={{
-            background: 'white',
-            borderRadius: 16,
-            padding: 28,
-            width: 360,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: 16,
           }}>
+          <div
+            style={{
+              background: 'white',
+              borderRadius: 16,
+              padding: 28,
+              width: '100%',
+              maxWidth: 360,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+            }}>
             <p style={{ margin: '0 0 8px', fontSize: '1.1rem', fontWeight: 700, color: '#111827' }}>
               Supprimer ce projet ?
             </p>

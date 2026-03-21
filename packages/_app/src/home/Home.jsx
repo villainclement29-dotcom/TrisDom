@@ -73,8 +73,9 @@ export function Home() {
         <Flex
           style={{
             position: 'fixed',
-            left: '45%',
+            left: '50%',
             top: '1%',
+            transform: 'translateX(-50%)',
             gap: '5px',
             zIndex: '9999',
             cursor: 'pointer',

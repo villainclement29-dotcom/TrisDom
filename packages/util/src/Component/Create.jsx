@@ -4,17 +4,30 @@ import { $addEdge, $addNode } from '@agentix/store'
 import { saveProject } from '@agentix/base'
 import { useNavigate } from 'raviger'
 import { Button, Flex, Text, TextField, TextArea } from '@radix-ui/themes'
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { supabase } from '@agentix/util'
 import { useStore } from '@nanostores/react'
 import { onAgent } from '@agentix/ai/src/actions/agent'
 import { getID, BASIC_NODE } from '@agentix/util'
 import { TlCourseModule, TlHeadline, TlModuleTopics, TlToolAgent } from '@agentix/util/src/agents'
 import { isEmpty } from 'lodash'
+import { ArrowLeftIcon } from '@radix-ui/react-icons'
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 768px)').matches)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const handler = (e) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+  return isMobile
+}
 
 export default function Create() {
   const navigate = useNavigate()
   const chatAgents = useStore($chatAgents)
+  const isMobile = useIsMobile()
 
   const themeRef = useRef('')
   const promptRef = useRef('')
@@ -191,21 +204,40 @@ export default function Create() {
     <Flex
       align='center'
       justify='center'
-      style={{ height: '100vh', backgroundColor: '#f8f9fb' }}>
+      style={{ minHeight: '100vh', backgroundColor: '#f8f9fb', padding: isMobile ? '16px' : '0' }}>
       <Flex
         direction='column'
         gap='4'
         style={{
-          width: 520,
-          padding: 32,
+          width: '100%',
+          maxWidth: 520,
+          padding: isMobile ? 20 : 32,
           borderRadius: 16,
           border: '1px solid #e5e7eb',
           backgroundColor: '#fff',
           boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
         }}>
-        <Text size='6' weight='bold'>
-          Créer un projet
-        </Text>
+        <Flex align='center' gap='2'>
+          <button
+            onClick={() => navigate('/Gallery')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 32,
+              height: 32,
+              borderRadius: '50%',
+              border: '1px solid #e5e7eb',
+              background: 'white',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}>
+            <ArrowLeftIcon style={{ width: 16, height: 16 }} />
+          </button>
+          <Text size='6' weight='bold'>
+            Créer un projet
+          </Text>
+        </Flex>
 
         <TextField.Root
           placeholder='Thème (ex: Photosynthèse, Révolution française…)'
