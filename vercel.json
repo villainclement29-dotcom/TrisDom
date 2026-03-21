@@ -4,5 +4,8 @@
   "installCommand": "yarn install",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  ],
+  "env": {
+    "YARN_ENABLE_GLOBAL_CACHE": "false"
+  }
 }

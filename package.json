@@ -1,11 +1,12 @@
 {
   "name": "@agentix/repo",
+  "private": true,
   "workspaces": [
     "packages/*"
   ],
   "version": "1.0.0",
   "main": "index.js",
-  "license": "private",
+  "license": "UNLICENSED",
   "type": "module",
   "packageManager": "yarn@4.10.3",
   "scripts": {
