@@ -1,6 +1,10 @@
 # build output
 dist/
 
+# yarn (on utilise npm)
+yarn.lock
+.yarn/
+
 # dependencies
 node_modules/
 
