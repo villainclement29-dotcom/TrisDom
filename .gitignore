@@ -1,9 +1,10 @@
 # build output
 dist/
 
-# yarn (on utilise npm)
+# lockfiles (générés par plateforme, ne pas commiter)
 yarn.lock
 .yarn/
+package-lock.json
 
 # dependencies
 node_modules/
