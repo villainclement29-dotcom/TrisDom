@@ -1,5 +1,5 @@
 import { onAgent } from './agent'
-import { $addLearnResponse, $agents, $Content, $nodes, $edges, $isContentGenerating } from '@agentix/store'
+import { $addLearnResponse, $agents, $Content, $nodes, $edges, $isContentGenerating, autoSave } from '@agentix/store'
 import { generateLessonImage } from './generateImage'
 
 function buildAncestorPath(nodeId, nodes, edges) {
@@ -47,6 +47,8 @@ export async function explainNodeContent(id, data) {
 
     $addLearnResponse(id, fullResponse)
     $Content.set(fullResponse)
+
+    autoSave()
 
     // Génération de l'illustration en parallèle (fire-and-forget)
     generateLessonImage(id, contextPrompt)

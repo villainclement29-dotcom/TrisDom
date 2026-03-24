@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from '@nanostores/react'
 import { QcmCard } from './QcmCards'
-import { $QcmSummary, $setQCMScore, $setQcmSummary, $setNodeBgColor, $removeQcmSummary } from '@agentix/store'
+import { $QcmSummary, $setQCMScore, $setQcmSummary, $setNodeBgColor, $removeQcmSummary, autoSave } from '@agentix/store'
 
 export function Qcm({ data, rootId }) {
     const qcmSummaryMap = useStore($QcmSummary)
@@ -103,6 +103,7 @@ export function Qcm({ data, rootId }) {
 
         $setQcmSummary(rootId, summary)
         $setQCMScore(rootId, score)
+        autoSave()
 
         // 3 niveaux : parfait / >= 50% / < 50%
         let bgColor

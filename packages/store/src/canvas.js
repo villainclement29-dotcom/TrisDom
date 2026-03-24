@@ -1,7 +1,7 @@
 import { atom } from 'nanostores'
 import { initialEdges, initialNodes } from './initialData'
-import { getLayoutedElements } from '@agentix/util'
-import { $addExerciseFullResponse, $addLearnResponse, $LearnResponses, $setQcmSummary } from './response'
+import { getLayoutedElements, supabase } from '@agentix/util'
+import { $addExerciseFullResponse, $addLearnResponse, $addQcmResponse, $setQcmSummary, $LearnResponses, $ExerciseFullResponse, $QcmFullResponse, $QcmSummary, $addLessonImage } from './response'
 
 // Processed nodes with new positions
 const { nodes, edges } = getLayoutedElements(initialNodes, initialEdges)
@@ -19,6 +19,26 @@ export const $isGenerating = atom(false)
 export const $generatingProgress = atom({ current: 0, total: 0 })
 export const $justGenerated = atom(false)
 export const $isContentGenerating = atom(false)
+export const $isPanelOpen = atom(false)
+
+// ---------- auto-save ----------
+
+export async function autoSave() {
+  const projectId = $currentProjectId.get()
+  if (!projectId) return
+
+  const { error } = await supabase
+    .from('projects')
+    .update({
+      data: { nodes: $nodes.get(), edges: $edges.get() },
+      LearnResponses: $LearnResponses.get(),
+      ExercisesResponses: $ExerciseFullResponse.get(),
+      qcm: { data: $QcmFullResponse.get(), summary: $QcmSummary.get() },
+    })
+    .eq('id', projectId)
+
+  if (error) console.error('[autoSave] erreur:', error)
+}
 
 
 export const $setProjectId = (id) => {
@@ -46,13 +66,11 @@ export const loadProjectGraph = (
   edges,
   LearnResponses,
   ExercisesFullResponses,
-  QcmSummary
+  qcmColumn
 ) => {
-  // si tu veux relancer le layout :
   const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges)
   $nodes.set(layoutedNodes)
   $edges.set(layoutedEdges)
-  console.log('réponses dans la fonction', LearnResponses)
 
   Object.entries(LearnResponses || {}).forEach(([nodeId, markdown]) => {
     $addLearnResponse(nodeId, markdown)
@@ -60,11 +78,18 @@ export const loadProjectGraph = (
   Object.entries(ExercisesFullResponses || {}).forEach(([nodeId, content]) => {
     $addExerciseFullResponse(nodeId, content)
   })
-  Object.entries(QcmSummary || {}).forEach(([nodeId, content]) => {
-    $setQcmSummary(nodeId, content)
+
+  // Nouveau format : { data: {...}, summary: {...} }
+  // Ancien format (rétrocompat) : l'objet était directement les données QCM
+  const qcmData = qcmColumn?.data ?? qcmColumn ?? {}
+  const qcmSummary = qcmColumn?.summary ?? {}
+  Object.entries(qcmData).forEach(([nodeId, content]) => {
+    $addQcmResponse(nodeId, content)
+  })
+  Object.entries(qcmSummary).forEach(([nodeId, summary]) => {
+    if (summary) $setQcmSummary(nodeId, summary)
   })
 
-  // optionnel : reset de la sélection
   $rootnode.set(null)
   $selectedNodeId.set(null)
   $selectedNode.set(null)

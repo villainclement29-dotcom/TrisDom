@@ -6,6 +6,7 @@ import {
     $LearnResponses,
     $setQcmSummary,
     $isContentGenerating,
+    autoSave,
 } from '@agentix/store'
 
 function extractJSON(raw) {
@@ -60,6 +61,7 @@ export async function generateQcm(RootId) {
 
         $addQcmResponse(RootId, parsed)
         $Content.set(parsed)
+        autoSave()
     } catch (error) {
         console.error("Erreur lors de la génération du QCM :", error)
     } finally {

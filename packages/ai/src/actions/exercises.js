@@ -6,6 +6,7 @@ import {
   $ExerciseFullResponse,
   $LearnResponses,
   $isContentGenerating,
+  autoSave,
 } from '@agentix/store'
 
 export async function generateExercicesWithCorrection(RootId) {
@@ -44,6 +45,7 @@ export async function generateExercicesWithCorrection(RootId) {
     let fullResponse = { exercices: ExerciseResponse, corrections: CorrectionResponse }
     $addExerciseFullResponse(RootId, fullResponse)
     $Content.set(fullResponse)
+    autoSave()
   } catch (error) {
     console.error('Erreur lors de l’explication:', error)
   } finally {

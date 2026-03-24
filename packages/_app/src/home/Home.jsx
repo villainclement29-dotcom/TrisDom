@@ -1,8 +1,5 @@
-import { FlowCanvas } from '@agentix/canvas'
-import '@xyflow/react/dist/style.css'
-import { Flex } from '@radix-ui/themes'
+import { PathCanvas } from '@agentix/canvas'
 import { Content } from '@agentix/content-box'
-import { SaveProjectButton } from '@agentix/base'
 import { $currentProjectId, $setProjectId, loadProjectGraph, $justGenerated } from '@agentix/store'
 import { supabase } from '@agentix/util'
 import { useStore } from '@nanostores/react'
@@ -53,9 +50,9 @@ export function Home() {
       const edges = projectData?.data?.edges ?? []
       const LearnResponses = projectData?.LearnResponses
       const ExercisesFullResponses = projectData?.ExercisesResponses
-      const qcmSummary = projectData?.qcm
+      const qcmData = projectData?.qcm
 
-      loadProjectGraph(nodes, edges, LearnResponses, ExercisesFullResponses, qcmSummary)
+      loadProjectGraph(nodes, edges, LearnResponses, ExercisesFullResponses, qcmData)
     }
 
     loadFromSupabase()
@@ -66,26 +63,11 @@ export function Home() {
   }, [projectId])
   return (
     <div style={{ height: '100vh', width: '100%' }}>
-      <Flex
-        justify={'between'}
-        gap={'3'}
-        style={{ height: '100%' }}>
-        <Flex
-          style={{
-            position: 'fixed',
-            left: '50%',
-            top: '1%',
-            transform: 'translateX(-50%)',
-            gap: '5px',
-            zIndex: '9999',
-            cursor: 'pointer',
-          }}>
-          <GalleryButton />
-          <SaveProjectButton />
-        </Flex>
-        <FlowCanvas />
-        <Content />
-      </Flex>
+      <div style={{ position: 'fixed', top: 12, left: 12, zIndex: 10000 }}>
+        <GalleryButton />
+      </div>
+      <PathCanvas />
+      <Content />
     </div>
   )
 }
